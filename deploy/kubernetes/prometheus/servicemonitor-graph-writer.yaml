@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: relentless-graph-writer
+  namespace: default
+  labels:
+    app: relentless
+spec:
+  selector:
+    matchLabels:
+      app: relentless-graph-writer
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - path: /metrics
+      port: metrics

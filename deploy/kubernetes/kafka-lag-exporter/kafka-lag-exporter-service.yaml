@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-lag-exporter
+  namespace: default
+  labels:
+    app: kafka-lag-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-lag-exporter
+  ports:
+    - name: metrics
+      port: 9308
+      targetPort: 9308

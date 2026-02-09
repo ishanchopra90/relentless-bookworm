@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relentless-grafana
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relentless-grafana
+  template:
+    metadata:
+      labels:
+        app: relentless-grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: relentless
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1Gi"

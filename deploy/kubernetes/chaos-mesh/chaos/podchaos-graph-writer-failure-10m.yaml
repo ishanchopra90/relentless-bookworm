@@ -1,0 +1,22 @@
+# PodChaos: single graph-writer pod in a failure state for 10 minutes.
+# Use pod-failure (not pod-kill) so the pod isn't replaced immediately. Observations: results/WORKER_V3_CHAOS_README.md.
+#
+# Apply:  kubectl apply -f deploy/kubernetes/chaos-mesh/chaos/podchaos-graph-writer-failure-10m.yaml
+# Remove: kubectl delete -f deploy/kubernetes/chaos-mesh/chaos/podchaos-graph-writer-failure-10m.yaml
+# (Removing early ends the failure and restores the pod before 10m.)
+#
+# For 5 minutes instead, set duration: "300s" and use a copy of this file or edit in place.
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: graph-writer-pod-failure-10m
+  namespace: chaos-mesh
+spec:
+  action: pod-failure
+  mode: one
+  duration: "600s"   # 10 minutes; use "300s" for 5 minutes
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: relentless-graph-writer

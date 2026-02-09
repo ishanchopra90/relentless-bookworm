@@ -1,0 +1,56 @@
+# Workflow: delay 5 min (worker → openlibrary.org) → wait 5 min → 100% loss 5 min (worker → openlibrary.org).
+# Apply once: kubectl apply -f deploy/kubernetes/chaos-mesh/workflows/workflow-network-chaos-delay-then-loss.yaml
+# Remove:   kubectl delete -f deploy/kubernetes/chaos-mesh/workflows/workflow-network-chaos-delay-then-loss.yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: network-chaos-delay-then-loss
+  namespace: chaos-mesh
+spec:
+  entry: sequence
+  templates:
+    - name: sequence
+      templateType: Serial
+      deadline: 1200s
+      children:
+        - delay-5m
+        - wait-5m
+        - loss-5m
+    - name: delay-5m
+      templateType: NetworkChaos
+      deadline: 300s
+      networkChaos:
+        action: delay
+        mode: all
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker
+        direction: to
+        externalTargets:
+          - openlibrary.org
+        delay:
+          latency: "5000ms"
+          correlation: "100"
+          jitter: "100ms"
+    - name: wait-5m
+      templateType: Suspend
+      deadline: 300s
+    - name: loss-5m
+      templateType: NetworkChaos
+      deadline: 300s
+      networkChaos:
+        action: loss
+        mode: all
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker
+        direction: to
+        externalTargets:
+          - openlibrary.org
+        loss:
+          loss: "100"
+          correlation: "100"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: relentless-graph-writer
+  namespace: default
+  labels:
+    app: relentless-graph-writer
+spec:
+  type: ClusterIP
+  selector:
+    app: relentless-graph-writer
+  ports:
+    - name: metrics
+      port: 9091
+      targetPort: 9091

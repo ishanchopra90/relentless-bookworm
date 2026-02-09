@@ -1,0 +1,47 @@
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: relentless-kafka
+  namespace: kafka
+spec:
+  kafka:
+    version: 4.1.1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: relentless-kafka-pool
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: relentless-kafka
+spec:
+  replicas: 1
+  roles:
+    - broker
+    - controller
+  storage:
+    type: ephemeral
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 500m
+    limits:
+      memory: 1Gi
+      cpu: "1"
+  jvmOptions:
+    -Xms: 256m
+    -Xmx: 768m

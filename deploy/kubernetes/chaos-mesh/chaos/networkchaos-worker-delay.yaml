@@ -1,0 +1,27 @@
+# NetworkChaos: delay egress from worker pods to Open Library.
+# Use during 20-seed run to observe fetch latency p95, frontier lag, worker error rate.
+# Validates: worker retries and lag behavior at 31w scale.
+#
+# Apply:  kubectl apply -f deploy/kubernetes/chaos-mesh/chaos/networkchaos-worker-delay.yaml
+# Remove: kubectl delete -f deploy/kubernetes/chaos-mesh/chaos/networkchaos-worker-delay.yaml
+#
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: worker-to-openlibrary-delay
+  namespace: chaos-mesh
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: relentless-worker
+  direction: to
+  externalTargets:
+    - openlibrary.org
+  delay:
+    latency: "5000ms"
+    correlation: "100"
+    jitter: "100ms"

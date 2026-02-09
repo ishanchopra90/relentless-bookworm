@@ -1,0 +1,15 @@
+FROM golang:1.24.5-alpine AS builder
+
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/graph-writer ./cmd/graph-writer
+
+FROM alpine:3.20
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
+COPY --from=builder /bin/graph-writer /usr/local/bin/graph-writer
+ENTRYPOINT ["/usr/local/bin/graph-writer"]

@@ -1,0 +1,20 @@
+# PodChaos: kill 10 worker pods.
+# Part of chaos test "Worker pod kills" (20-seed, 31w, 1gw).
+# Observe: KEDA scale-up, frontier lag spike/recovery, Kafka rebalance, commit coordinator.
+#
+# Apply:  kubectl apply -f deploy/kubernetes/chaos-mesh/chaos/podchaos-worker-kill-10.yaml
+# Remove: kubectl delete -f deploy/kubernetes/chaos-mesh/chaos/podchaos-worker-kill-10.yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: worker-pod-kill-10
+  namespace: chaos-mesh
+spec:
+  action: pod-kill
+  mode: fixed
+  value: "10"
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: relentless-worker

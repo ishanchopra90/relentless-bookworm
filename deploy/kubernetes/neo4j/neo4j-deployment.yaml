@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relentless-neo4j
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relentless-neo4j
+  template:
+    metadata:
+      labels:
+        app: relentless-neo4j
+    spec:
+      containers:
+        - name: neo4j
+          image: neo4j:5.19
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NEO4J_AUTH
+              value: neo4j/relentless
+            # Cap JVM heap so we stay under the container memory limit and avoid OOMKilled
+            - name: NEO4J_server_memory_heap_initial__size
+              value: "256m"
+            - name: NEO4J_server_memory_heap_max__size
+              value: "512m"
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
+          ports:
+            - name: http
+              containerPort: 7474
+            - name: bolt
+              containerPort: 7687

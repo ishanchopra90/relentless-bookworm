@@ -1,0 +1,19 @@
+# PodChaos: kill all worker pods (e.g. 31 at max scale).
+# Part of chaos test "Worker pod kills" (20-seed, 31w, 1gw).
+# Observe: KEDA scale-up from 0, frontier lag spike, full consumer-group rebalance, recovery.
+#
+# Apply:  kubectl apply -f deploy/kubernetes/chaos-mesh/chaos/podchaos-worker-kill-all.yaml
+# Remove: kubectl delete -f deploy/kubernetes/chaos-mesh/chaos/podchaos-worker-kill-all.yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: worker-pod-kill-all
+  namespace: chaos-mesh
+spec:
+  action: pod-kill
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: relentless-worker

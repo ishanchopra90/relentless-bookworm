@@ -1,0 +1,23 @@
+image:
+  repository: relentless-api
+  tag: dev
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30080
+
+env:
+  KAFKA_BROKER: relentless-kafka-kafka-bootstrap.kafka:9092
+  KAFKA_TOPIC: relentless.crawl.frontier
+  REDIS_ADDR: relentless-redis.default.svc.cluster.local:6379
+
+replicaCount: 1
+
+serviceAccount:
+  create: true
+  name: ""
+
+rbac:
+  create: true

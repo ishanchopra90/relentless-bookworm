@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relentless-graph-writer
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relentless-graph-writer
+  template:
+    metadata:
+      labels:
+        app: relentless-graph-writer
+    spec:
+      containers:
+        - name: graph-writer
+          image: relentless-graph-writer:dev
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 50m
+            limits:
+              memory: 64Mi
+              cpu: 100m
+          ports:
+            - name: metrics
+              containerPort: 9091
+          env:
+            - name: KAFKA_BROKER
+              value: relentless-kafka-kafka-bootstrap.kafka:9092
+            - name: KAFKA_RESULTS_TOPIC
+              value: relentless.crawl.results
+            - name: KAFKA_EDGES_TOPIC
+              value: relentless.graph.edges
+            - name: KAFKA_RESULTS_GROUP
+              value: relentless-graph-results
+            - name: KAFKA_EDGES_GROUP
+              value: relentless-graph-edges
+            - name: NEO4J_URI
+              value: neo4j://relentless-neo4j.default.svc.cluster.local:7687
+            - name: NEO4J_USER
+              value: neo4j
+            - name: NEO4J_PASSWORD
+              value: relentless
+            - name: METRICS_ADDR
+              value: ":9091"

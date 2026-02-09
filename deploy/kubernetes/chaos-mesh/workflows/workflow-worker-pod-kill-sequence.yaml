@@ -1,0 +1,77 @@
+# Workflow: one run of the cycle — kill 1 → wait 5 min → kill 5 → wait 5 min → kill 10 → wait 5 min → kill all (31).
+# Apply once: kubectl apply -f deploy/kubernetes/chaos-mesh/workflows/workflow-worker-pod-kill-sequence.yaml
+# Remove:   kubectl delete -f deploy/kubernetes/chaos-mesh/workflows/workflow-worker-pod-kill-sequence.yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: worker-pod-kill-sequence
+  namespace: chaos-mesh
+spec:
+  entry: sequence
+  templates:
+    - name: sequence
+      templateType: Serial
+      deadline: 1200s
+      children:
+        - kill-1
+        - wait-5m
+        - kill-5
+        - wait-5m-2
+        - kill-10
+        - wait-5m-3
+        - kill-all
+    - name: kill-1
+      templateType: PodChaos
+      deadline: 60s
+      podChaos:
+        action: pod-kill
+        mode: one
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker
+    - name: wait-5m
+      templateType: Suspend
+      deadline: 300s
+    - name: kill-5
+      templateType: PodChaos
+      deadline: 60s
+      podChaos:
+        action: pod-kill
+        mode: fixed
+        value: "5"
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker
+    - name: wait-5m-2
+      templateType: Suspend
+      deadline: 300s
+    - name: kill-10
+      templateType: PodChaos
+      deadline: 60s
+      podChaos:
+        action: pod-kill
+        mode: fixed
+        value: "10"
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker
+    - name: wait-5m-3
+      templateType: Suspend
+      deadline: 300s
+    - name: kill-all
+      templateType: PodChaos
+      deadline: 60s
+      podChaos:
+        action: pod-kill
+        mode: all
+        selector:
+          namespaces:
+            - default
+          labelSelectors:
+            app: relentless-worker

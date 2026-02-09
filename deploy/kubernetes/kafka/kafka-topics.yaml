@@ -1,0 +1,47 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: relentless-crawl-frontier
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: relentless-kafka
+spec:
+  partitions: 31
+  replicas: 1
+  topicName: relentless.crawl.frontier
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: relentless-crawl-results
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: relentless-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  topicName: relentless.crawl.results
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: relentless-graph-edges
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: relentless-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  topicName: relentless.graph.edges
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: relentless-crawl-dlq
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: relentless-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  topicName: relentless.crawl.dlq

@@ -1,0 +1,212 @@
+{
+  "title": "Relentless Bookworm Overview",
+  "schemaVersion": 39,
+  "version": 4,
+  "refresh": "30s",
+  "tags": [
+    "relentless",
+    "overview"
+  ],
+  "timezone": "browser",
+  "description": "Works with or without proxy pool (PROXY_URL/PROXY_POOL). Per-proxy panels removed to reduce Prometheus query load and Grafana crashes; use ad-hoc Prometheus queries if per-proxy view needed.",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Kafka Frontier Lag",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag{topic=\"relentless.crawl.frontier\"}",
+          "legendFormat": "{{consumergroup}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Replicas (Worker + Graph Writer)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{deployment=\"relentless-worker\"}",
+          "legendFormat": "worker"
+        },
+        {
+          "expr": "kube_deployment_status_replicas_available{deployment=\"relentless-graph-writer\"}",
+          "legendFormat": "graph-writer"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Graph Writer Lag (Results + Edges)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag{topic=\"relentless.crawl.results\",consumergroup=\"relentless-graph-results\"}",
+          "legendFormat": "results"
+        },
+        {
+          "expr": "kafka_consumergroup_lag{topic=\"relentless.graph.edges\",consumergroup=\"relentless-graph-edges\"}",
+          "legendFormat": "edges"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Crawl Throughput (URLs/sec)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(relentless_worker_jobs_success_total[1m])",
+          "legendFormat": "worker success"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Graph Writer Throughput (msgs/sec)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(relentless_graph_writer_results_received_total[1m])",
+          "legendFormat": "results"
+        },
+        {
+          "expr": "rate(relentless_graph_writer_edges_received_total[1m])",
+          "legendFormat": "edges"
+        },
+        {
+          "expr": "rate(relentless_graph_writer_edges_written_total[1m])",
+          "legendFormat": "edges written"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Worker Skipped + Failed Rate (jobs/sec)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(relentless_worker_jobs_skipped_total[1m])",
+          "legendFormat": "skipped"
+        },
+        {
+          "expr": "rate(relentless_worker_jobs_failed_total[1m])",
+          "legendFormat": "failed"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Fetch Latency (p50/p95)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(relentless_worker_fetch_latency_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(relentless_worker_fetch_latency_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rates (%)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 * rate(relentless_worker_jobs_failed_total[5m]) / rate(relentless_worker_jobs_received_total[5m])",
+          "legendFormat": "worker"
+        },
+        {
+          "expr": "100 * rate(relentless_graph_writer_results_failed_total[5m]) / rate(relentless_graph_writer_results_received_total[5m])",
+          "legendFormat": "graph-writer results"
+        },
+        {
+          "expr": "100 * rate(relentless_graph_writer_edges_failed_total[5m]) / rate(relentless_graph_writer_edges_received_total[5m])",
+          "legendFormat": "graph-writer edges"
+        },
+        {
+          "expr": "100 * rate(relentless_graph_writer_edges_failed_total[5m]) / (rate(relentless_graph_writer_edges_written_total[5m]) + rate(relentless_graph_writer_edges_failed_total[5m]))",
+          "legendFormat": "graph-writer edges write"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container memory (working set)",
+      "datasource": "Prometheus",
+      "description": "All containers in default namespace (from cAdvisor). Requires Prometheus to scrape kubelet/cAdvisor (prometheus-additional-scrape-configs).",
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{namespace=\"default\", container!=\"POD\"}",
+          "legendFormat": "{{pod}} / {{container}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes"
+        }
+      },
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Kafka namespace: memory & CPU",
+      "datasource": "Prometheus",
+      "description": "Broker and Strimzi containers in kafka namespace. Memory (left), CPU rate (right). Requires Prometheus to scrape kubelet/cAdvisor.",
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{namespace=\"kafka\", container!=\"POD\"}",
+          "legendFormat": "{{pod}} / {{container}} (mem)"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{namespace=\"kafka\", container!=\"POD\"}[5m])",
+          "legendFormat": "{{pod}} / {{container}} (cpu)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "\\(mem\\)$" },
+            "properties": [{ "id": "unit", "value": "decbytes" }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "\\(cpu\\)$" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "custom.axisPlacement", "value": "right" }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Rate limit hits (429)",
+      "datasource": "Prometheus",
+      "description": "Open Library HTTP 429 responses per worker (rate).",
+      "targets": [
+        {
+          "expr": "rate(relentless_worker_rate_limit_hits_total[1m])",
+          "legendFormat": "{{pod}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 40, "w": 12, "h": 6 }
+    }
+  ]
+}

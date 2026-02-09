@@ -1,0 +1,83 @@
+# Schedule sequence: kill 1 worker → wait 5 min → kill 5 → wait 5 min → kill 10 → wait 5 min → kill all (31) → wait 5 min → repeat.
+# Cycle runs every 20 min (at :00, :20, :40 past each hour the sequence starts).
+# Apply all: kubectl apply -f deploy/kubernetes/chaos-mesh/workflows/schedule-worker-pod-kill-sequence.yaml
+# Pause all: for n in worker-kill-1 worker-kill-5 worker-kill-10 worker-kill-all; do kubectl annotate schedule $n -n chaos-mesh experiment.chaos-mesh.org/pause=true; done
+# Remove all: kubectl delete -f deploy/kubernetes/chaos-mesh/workflows/schedule-worker-pod-kill-sequence.yaml
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: worker-kill-1
+  namespace: chaos-mesh
+spec:
+  schedule: "0,20,40 * * * *"
+  historyLimit: 3
+  concurrencyPolicy: Forbid
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: one
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        app: relentless-worker
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: worker-kill-5
+  namespace: chaos-mesh
+spec:
+  schedule: "5,25,45 * * * *"
+  historyLimit: 3
+  concurrencyPolicy: Forbid
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: fixed
+    value: "5"
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        app: relentless-worker
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: worker-kill-10
+  namespace: chaos-mesh
+spec:
+  schedule: "10,30,50 * * * *"
+  historyLimit: 3
+  concurrencyPolicy: Forbid
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: fixed
+    value: "10"
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        app: relentless-worker
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: worker-kill-all
+  namespace: chaos-mesh
+spec:
+  schedule: "15,35,55 * * * *"
+  historyLimit: 3
+  concurrencyPolicy: Forbid
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: all
+    selector:
+      namespaces:
+        - default
+      labelSelectors:
+        app: relentless-worker

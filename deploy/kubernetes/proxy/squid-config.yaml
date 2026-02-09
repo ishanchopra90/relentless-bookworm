@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-squid-config
+  namespace: default
+data:
+  squid.conf: |
+    http_port 3128
+    acl all src all
+    http_access allow all
+    coredump_dir /var/spool/squid
+    cache_dir ufs /var/cache/squid 64 16 256

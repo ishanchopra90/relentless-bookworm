@@ -1,0 +1,32 @@
+image:
+  repository: relentless-worker
+  tag: dev
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 9090
+
+env:
+  KAFKA_BROKER: relentless-kafka-kafka-bootstrap.kafka:9092
+  KAFKA_TOPIC: relentless.crawl.frontier
+  KAFKA_GROUP_ID: relentless-worker
+  KAFKA_RESULTS_TOPIC: relentless.crawl.results
+  KAFKA_EDGES_TOPIC: relentless.graph.edges
+  KAFKA_FRONTIER_TOPIC: relentless.crawl.frontier
+  KAFKA_DLQ_TOPIC: relentless.crawl.dlq
+  REDIS_ADDR: relentless-redis.default.svc.cluster.local:6379
+  DEDUPE_TTL: 24h
+  MAX_DEPTH: "3"
+  RETRY_MAX: "3"
+  RETRY_BASE_DELAY: 200ms
+  RETRY_MAX_DELAY: 2s
+  CONCURRENT_JOBS: "5"
+  METRICS_ADDR: ":9090"
+  # Optional: proxy for Open Library (bypass per-IP rate limit). Single proxy or pool (comma-separated; worker picks by HOSTNAME).
+  # PROXY_URL: "http://proxy.example:3128"
+  # 3 egress proxies in default namespace. Deploy first: kubectl apply -f deploy/kubernetes/proxy/
+  # Use FQDN so workers resolve proxies even from another namespace.
+  PROXY_POOL: "http://proxy-0.proxy.default.svc.cluster.local:3128,http://proxy-1.proxy.default.svc.cluster.local:3128,http://proxy-2.proxy.default.svc.cluster.local:3128"

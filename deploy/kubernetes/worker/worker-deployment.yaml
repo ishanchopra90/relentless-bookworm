@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relentless-worker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relentless-worker
+  template:
+    metadata:
+      labels:
+        app: relentless-worker
+    spec:
+      containers:
+        - name: worker
+          image: relentless-worker:dev
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 50m
+            limits:
+              memory: 64Mi
+              cpu: 100m
+          env:
+            - name: KAFKA_BROKER
+              value: relentless-kafka-kafka-bootstrap.kafka:9092
+            - name: KAFKA_TOPIC
+              value: relentless.crawl.frontier
+            - name: KAFKA_GROUP_ID
+              value: relentless-worker
+            - name: REDIS_ADDR
+              value: relentless-redis.default.svc.cluster.local:6379
+            - name: DEDUPE_TTL
+              value: 24h
+            - name: MAX_DEPTH
+              value: "3"
+            - name: RETRY_MAX
+              value: "3"
+            - name: RETRY_BASE_DELAY
+              value: 200ms
+            - name: RETRY_MAX_DELAY
+              value: 2s
+            - name: CONCURRENT_JOBS
+              value: "5"
+            - name: METRICS_ADDR
+              value: ":9090"
+            - name: KAFKA_RESULTS_TOPIC
+              value: relentless.crawl.results
+            - name: KAFKA_EDGES_TOPIC
+              value: relentless.graph.edges
+            - name: KAFKA_FRONTIER_TOPIC
+              value: relentless.crawl.frontier
+            - name: KAFKA_DLQ_TOPIC
+              value: relentless.crawl.dlq
+            - name: PROXY_POOL
+              value: "http://proxy-0.proxy.default.svc.cluster.local:3128,http://proxy-1.proxy.default.svc.cluster.local:3128,http://proxy-2.proxy.default.svc.cluster.local:3128"

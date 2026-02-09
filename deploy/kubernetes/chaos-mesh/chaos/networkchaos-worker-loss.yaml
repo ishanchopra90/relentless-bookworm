@@ -1,0 +1,26 @@
+# NetworkChaos: packet loss on egress from worker pods to Open Library.
+# Use during 20-seed run to observe worker error rate, DLQ, frontier lag.
+# Validates: worker retries, DLQ, and lag behavior at 31w scale.
+#
+# Apply:  kubectl apply -f deploy/kubernetes/chaos-mesh/chaos/networkchaos-worker-loss.yaml
+# Remove: kubectl delete -f deploy/kubernetes/chaos-mesh/chaos/networkchaos-worker-loss.yaml
+#
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: worker-to-openlibrary-loss
+  namespace: chaos-mesh
+spec:
+  action: loss
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: relentless-worker
+  direction: to
+  externalTargets:
+    - openlibrary.org
+  loss:
+    loss: "100"
+    correlation: "100"

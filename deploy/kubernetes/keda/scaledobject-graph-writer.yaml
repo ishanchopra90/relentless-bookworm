@@ -1,0 +1,22 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: relentless-graph-writer
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: relentless-graph-writer
+  minReplicaCount: 1
+  # Edges topic has 3 partitions → at most 1 consumers.
+  maxReplicaCount: 1
+  pollingInterval: 30
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: relentless-kafka-kafka-bootstrap.kafka:9092
+        consumerGroup: relentless-graph-edges
+        topic: relentless.graph.edges
+        # Total lag across all partitions. 150 scales earlier than 300 so graph writers scale up before edges lag reaches ~2k.
+        lagThreshold: "150"
+        allowIdleConsumers: "true"
+        offsetResetPolicy: latest

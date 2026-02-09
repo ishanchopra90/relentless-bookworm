@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    app: proxy
+  ports:
+    - name: http
+      port: 3128
+      targetPort: 3128
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: proxy
+  namespace: default
+spec:
+  serviceName: proxy
+  replicas: 3
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: squid
+          image: ubuntu/squid:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - "squid -z -f /etc/squid/squid.conf 2>/dev/null || true; rm -f /run/squid.pid; exec squid -f /etc/squid/squid.conf -N"
+          ports:
+            - containerPort: 3128
+          volumeMounts:
+            - name: config
+              mountPath: /etc/squid/squid.conf
+              subPath: squid.conf
+            - name: spool
+              mountPath: /var/spool/squid
+            - name: cache
+              mountPath: /var/cache/squid
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "384Mi"
+              cpu: "200m"
+      volumes:
+        - name: config
+          configMap:
+            name: proxy-squid-config
+        - name: spool
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}

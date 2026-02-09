@@ -1,0 +1,21 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: relentless-worker
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: relentless-worker
+  minReplicaCount: 1
+  # Frontier has 31 partitions → at most 31 consumers.
+  maxReplicaCount: 31
+  pollingInterval: 30
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: relentless-kafka-kafka-bootstrap.kafka:9092
+        consumerGroup: relentless-worker
+        topic: relentless.crawl.frontier
+        lagThreshold: "50"
+        allowIdleConsumers: "true"
+        offsetResetPolicy: latest

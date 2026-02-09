@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "relentless-worker.fullname" . }}-config
+data:
+  KAFKA_BROKER: {{ .Values.env.KAFKA_BROKER | quote }}
+  KAFKA_TOPIC: {{ .Values.env.KAFKA_TOPIC | quote }}
+  KAFKA_GROUP_ID: {{ .Values.env.KAFKA_GROUP_ID | quote }}
+  KAFKA_RESULTS_TOPIC: {{ .Values.env.KAFKA_RESULTS_TOPIC | quote }}
+  KAFKA_EDGES_TOPIC: {{ .Values.env.KAFKA_EDGES_TOPIC | quote }}
+  KAFKA_FRONTIER_TOPIC: {{ .Values.env.KAFKA_FRONTIER_TOPIC | quote }}
+  KAFKA_DLQ_TOPIC: {{ .Values.env.KAFKA_DLQ_TOPIC | quote }}
+  REDIS_ADDR: {{ .Values.env.REDIS_ADDR | quote }}
+  DEDUPE_TTL: {{ .Values.env.DEDUPE_TTL | quote }}
+  MAX_DEPTH: {{ .Values.env.MAX_DEPTH | quote }}
+  RETRY_MAX: {{ .Values.env.RETRY_MAX | quote }}
+  RETRY_BASE_DELAY: {{ .Values.env.RETRY_BASE_DELAY | quote }}
+  RETRY_MAX_DELAY: {{ .Values.env.RETRY_MAX_DELAY | quote }}
+  CONCURRENT_JOBS: {{ .Values.env.CONCURRENT_JOBS | default "5" | quote }}
+  METRICS_ADDR: {{ .Values.env.METRICS_ADDR | quote }}
+  {{- if .Values.env.PROXY_URL }}
+  PROXY_URL: {{ .Values.env.PROXY_URL | quote }}
+  {{- end }}
+  {{- if .Values.env.PROXY_POOL }}
+  PROXY_POOL: {{ .Values.env.PROXY_POOL | quote }}
+  {{- end }}
